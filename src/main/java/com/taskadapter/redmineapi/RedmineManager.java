@@ -16,25 +16,6 @@
 
 package com.taskadapter.redmineapi;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
-
-import com.taskadapter.redmineapi.internal.CopyBytesHandler;
-import com.taskadapter.redmineapi.internal.Joiner;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-
 import com.taskadapter.redmineapi.bean.Attachment;
 import com.taskadapter.redmineapi.bean.Group;
 import com.taskadapter.redmineapi.bean.Identifiable;
@@ -54,10 +35,30 @@ import com.taskadapter.redmineapi.bean.Tracker;
 import com.taskadapter.redmineapi.bean.User;
 import com.taskadapter.redmineapi.bean.Version;
 import com.taskadapter.redmineapi.bean.Watcher;
+import com.taskadapter.redmineapi.bean.WikiPage;
+import com.taskadapter.redmineapi.internal.CopyBytesHandler;
+import com.taskadapter.redmineapi.internal.Joiner;
 import com.taskadapter.redmineapi.internal.Transport;
 import com.taskadapter.redmineapi.internal.URIConfigurator;
 import com.taskadapter.redmineapi.internal.io.MarkedIOException;
 import com.taskadapter.redmineapi.internal.io.MarkedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 
 /**
  * <b>Entry point</b> for the API: use this class to communicate with Redmine servers.
@@ -978,4 +979,73 @@ public class RedmineManager {
     public void deleteWatcherFromIssue(Watcher watcher, Issue issue) throws RedmineException {
         transport.deleteChildId(Issue.class, Integer.toString(issue.getId()), watcher, watcher.getId() );
     }
+    
+    public List<WikiPage> getWikiPagesByProject(final Project project) {        
+        try {
+        
+            Comparator<WikiPage> byCreatedOnField = 
+                    new Comparator<WikiPage>() {
+                        @Override
+                        public int compare(WikiPage o1, WikiPage o2) {
+                            if (o1.getCreatedOn() != null && o2.getUpdatedOn() != null) {
+                                return o1.getCreatedOn().compareTo(o2.getCreatedOn());
+                            } else {
+                                return 0;
+                            }
+                        }
+                    };
+            
+            List<WikiPage> resultList = 
+                    transport.getChildEntries(Project.class,
+                            project.getIdentifier(), WikiPage.class);
+        
+            // Usually the first page created is the 'Wiki' (home) page.
+            Collections.sort(resultList, byCreatedOnField);
+            
+            return resultList;
+            
+        } catch (RedmineException e) {
+            e.printStackTrace();
+            throw new RedmineInternalError(
+                "RedmineError while trying to get a list of wiki pages from project " +
+                project.getName() +
+                "[Reason:" + e.getMessage() + "]"
+            );
+        }
+    }
+    
+    public WikiPage getWikiPageByTitle(String title, INCLUDE... include) throws RedmineException {
+        String value = Joiner.join(",", include);
+		return transport.getObject(WikiPage.class, title, new BasicNameValuePair("include", value));
+    }
+    
+    public static void main(String[] args) throws Exception {
+        RedmineManager redmineManager = new RedmineManager("http://redmine.local", "d0874f019e6291d6fb52c123e416e13509fa3bda");
+        
+        Project yump = redmineManager.getProjectByKey("yump");
+        List<WikiPage> wikiPages = redmineManager.getWikiPagesByProject(yump);
+    
+        for(WikiPage page: wikiPages) {
+            System.out.println("=============================");
+            if (page.getParent() != null)
+            System.out.println("parent: "+page.getParent().getTitle());
+            System.out.println("title:" + page.getTitle());
+            System.out.println("text:" + page.getText());
+            System.out.println("user:" + page.getUser());
+            System.out.println("version:" + page.getVersion());
+            System.out.println("createdOn:" + page.getCreatedOn());
+            System.out.println("updatedOn:" + page.getUpdatedOn());
+            System.out.println("=============================");
+        }
+        
+        System.out.println(
+            redmineManager
+                    .getWikiPageByTitle(
+                            wikiPages.get(0).getTitle(), 
+                            INCLUDE.attachments
+                    ).getText()
+        );
+    }
+    
+    
 }

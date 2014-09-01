@@ -54,6 +54,7 @@ import com.taskadapter.redmineapi.bean.Tracker;
 import com.taskadapter.redmineapi.bean.User;
 import com.taskadapter.redmineapi.bean.Version;
 import com.taskadapter.redmineapi.bean.Watcher;
+import com.taskadapter.redmineapi.bean.WikiPage;
 import com.taskadapter.redmineapi.internal.comm.BaseCommunicator;
 import com.taskadapter.redmineapi.internal.comm.BasicHttpResponse;
 import com.taskadapter.redmineapi.internal.comm.Communicator;
@@ -148,8 +149,16 @@ public final class Transport {
                 Watcher.class,
                 config("watcher", "watchers", null,
                         RedmineJSONParser.WATCHER_PARSER));
+        
+            OBJECT_CONFIGS.put(
+                WikiPage.class,
+                config(
+                    "wiki_page", "wiki_pages", null, RedmineJSONParser.WIKI_PAGE_PARSER
+                )
+            );
+        
 	}
-
+  
 	private final URIConfigurator configurator;
 	private String login;
 	private String password;

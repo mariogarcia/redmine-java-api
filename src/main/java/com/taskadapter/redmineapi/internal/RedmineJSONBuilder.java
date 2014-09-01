@@ -20,6 +20,7 @@ import com.taskadapter.redmineapi.bean.TimeEntry;
 import com.taskadapter.redmineapi.bean.Tracker;
 import com.taskadapter.redmineapi.bean.User;
 import com.taskadapter.redmineapi.bean.Version;
+import com.taskadapter.redmineapi.bean.WikiPage;
 import com.taskadapter.redmineapi.internal.json.JsonObjectWriter;
 import com.taskadapter.redmineapi.internal.json.JsonOutput;
 
@@ -115,6 +116,14 @@ public class RedmineJSONBuilder {
 			writeMembership(writer, object);
 		}
 	};
+        
+        public static final JsonObjectWriter<WikiPage> WIKI_WRITER = new JsonObjectWriter<WikiPage>() {
+            @Override
+            public void write(JSONWriter writer, WikiPage object) 
+                    throws JSONException {
+                    writeWikiPage(writer, object);
+            }
+        };
 
 	/**
 	 * Writes a "create project" request.
@@ -373,6 +382,16 @@ public class RedmineJSONBuilder {
 		}
 		writer.endObject();
 	}
+        
+        public static void writeWikiPage(JSONWriter writer, WikiPage wikiPage) 
+            throws JSONException {
+            
+            writer
+              .key("text").value(wikiPage.getText())
+              .key("version").value(wikiPage.getVersion())
+              .endObject();
+        
+        }
 
 	/**
 	 * Adds a value to a writer if value is not <code>null</code>.

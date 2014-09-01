@@ -40,6 +40,7 @@ public class URIConfigurator {
 		urls.put(Role.class, "roles");
 		urls.put(Membership.class, "memberships");
 		urls.put(IssuePriority.class, "enumerations/issue_priorities");
+                urls.put(WikiPage.class, "wiki/index");
         urls.put(TimeEntryActivity.class, "enumerations/time_entry_activities");
 		urls.put(Watcher.class, "watchers");
 	}

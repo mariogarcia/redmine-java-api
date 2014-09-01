@@ -1,17 +1,5 @@
 package com.taskadapter.redmineapi.internal;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import com.taskadapter.redmineapi.RedmineFormatException;
 import com.taskadapter.redmineapi.bean.Attachment;
 import com.taskadapter.redmineapi.bean.Changeset;
@@ -19,13 +7,13 @@ import com.taskadapter.redmineapi.bean.CustomField;
 import com.taskadapter.redmineapi.bean.Group;
 import com.taskadapter.redmineapi.bean.Issue;
 import com.taskadapter.redmineapi.bean.IssueCategory;
+import com.taskadapter.redmineapi.bean.IssuePriority;
 import com.taskadapter.redmineapi.bean.IssueRelation;
 import com.taskadapter.redmineapi.bean.IssueStatus;
 import com.taskadapter.redmineapi.bean.Journal;
 import com.taskadapter.redmineapi.bean.JournalDetail;
 import com.taskadapter.redmineapi.bean.Membership;
 import com.taskadapter.redmineapi.bean.News;
-import com.taskadapter.redmineapi.bean.IssuePriority;
 import com.taskadapter.redmineapi.bean.Project;
 import com.taskadapter.redmineapi.bean.Role;
 import com.taskadapter.redmineapi.bean.SavedQuery;
@@ -35,8 +23,19 @@ import com.taskadapter.redmineapi.bean.Tracker;
 import com.taskadapter.redmineapi.bean.User;
 import com.taskadapter.redmineapi.bean.Version;
 import com.taskadapter.redmineapi.bean.Watcher;
+import com.taskadapter.redmineapi.bean.WikiPage;
 import com.taskadapter.redmineapi.internal.json.JsonInput;
 import com.taskadapter.redmineapi.internal.json.JsonObjectParser;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * A parser for JSON items sent by Redmine.
@@ -218,6 +217,13 @@ public class RedmineJSONParser {
         @Override
         public TimeEntryActivity parse(JSONObject input) throws JSONException {
             return parseTimeEntryActivity(input);
+        }
+    };
+    
+    public static final JsonObjectParser<WikiPage> WIKI_PAGE_PARSER = new JsonObjectParser<WikiPage>() {
+        @Override
+        public WikiPage parse(JSONObject input) throws JSONException {
+            return parseWikiPage(input);
         }
     };
     
@@ -712,4 +718,23 @@ public class RedmineJSONParser {
 	public static JSONObject getResponse(String body) throws JSONException {
 		return new JSONObject(body);
 	}
+        
+    public static WikiPage parseWikiPage(JSONObject object) throws JSONException {           
+        WikiPage wikiPage = new WikiPage();
+
+        wikiPage.setText(JsonInput.getStringOrEmpty(object, "text"));
+        wikiPage.setTitle(JsonInput.getStringNotNull(object, "title"));
+        wikiPage.setVersion(JsonInput.getIntOrNull(object, "version"));
+        wikiPage.setCreatedOn(getDateOrNull(object, "created_on"));
+        wikiPage.setUpdatedOn(getDateOrNull(object, "updated_on"));        
+        wikiPage.setUser(JsonInput.getObjectOrNull(object, "author", USER_PARSER));
+
+        WikiPage parent = JsonInput.getObjectOrNull(object, "parent", WIKI_PAGE_PARSER);
+        
+        if (parent != null) {
+            wikiPage.setParent(parent);
+        }
+        
+        return wikiPage;
+    }
 }
