@@ -1,41 +1,11 @@
 package com.taskadapter.redmineapi.internal;
 
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.AbstractHttpEntity;
-import org.apache.http.entity.InputStreamEntity;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.taskadapter.redmineapi.NotFoundException;
 import com.taskadapter.redmineapi.RedmineAuthenticationException;
 import com.taskadapter.redmineapi.RedmineException;
 import com.taskadapter.redmineapi.RedmineFormatException;
 import com.taskadapter.redmineapi.RedmineInternalError;
 import com.taskadapter.redmineapi.RedmineManager;
-import com.taskadapter.redmineapi.RedmineOptions;
 import com.taskadapter.redmineapi.bean.Group;
 import com.taskadapter.redmineapi.bean.Identifiable;
 import com.taskadapter.redmineapi.bean.Issue;
@@ -55,6 +25,7 @@ import com.taskadapter.redmineapi.bean.User;
 import com.taskadapter.redmineapi.bean.Version;
 import com.taskadapter.redmineapi.bean.Watcher;
 import com.taskadapter.redmineapi.bean.WikiPage;
+import com.taskadapter.redmineapi.bean.WikiPageDetail;
 import com.taskadapter.redmineapi.internal.comm.BaseCommunicator;
 import com.taskadapter.redmineapi.internal.comm.BasicHttpResponse;
 import com.taskadapter.redmineapi.internal.comm.Communicator;
@@ -66,6 +37,33 @@ import com.taskadapter.redmineapi.internal.comm.redmine.RedmineErrorHandler;
 import com.taskadapter.redmineapi.internal.json.JsonInput;
 import com.taskadapter.redmineapi.internal.json.JsonObjectParser;
 import com.taskadapter.redmineapi.internal.json.JsonObjectWriter;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.AbstractHttpEntity;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class Transport {
 	private static final Map<Class<?>, EntityConfig<?>> OBJECT_CONFIGS = new HashMap<Class<?>, EntityConfig<?>>();
@@ -156,6 +154,13 @@ public final class Transport {
                     "wiki_page", "wiki_pages", null, RedmineJSONParser.WIKI_PAGE_PARSER
                 )
             );
+            
+             OBJECT_CONFIGS.put(
+                WikiPageDetail.class,
+                config(
+                    "wiki_page", null, null, RedmineJSONParser.WIKI_PAGE_DETAIL_PARSER
+                )
+            );           
         
 	}
   
@@ -479,6 +484,34 @@ public final class Transport {
 		}
 	}
 
+        /**
+	 * Delivers a single child entry by its identifier.
+	 * 
+         * @param <T>
+         * @param parentClass
+         * @param parentId
+	 * @param classs target class.
+         * @param childId
+         * @return 
+         * @throws com.taskadapter.redmineapi.RedmineException 
+	 */
+	public <T> T getChildEntry(Class<?> parentClass, String parentId,
+			Class<T> classs, String childId) throws RedmineException {
+		final EntityConfig<T> config = getConfig(classs);                
+                final URI uri = 
+                        getURIConfigurator()
+                            .getChildIdURI(
+                                    parentClass, 
+                                    parentId, 
+                                    classs, 
+                                    childId);  
+
+		HttpGet http = new HttpGet(uri);
+		String response = getCommunicator().sendRequest(http);
+		
+                return parseResponse(response, config.singleObjectName, config.parser);
+	}
+        
 	/**
 	 * This number of objects (tasks, projects, users) will be requested from
 	 * Redmine server in 1 request.

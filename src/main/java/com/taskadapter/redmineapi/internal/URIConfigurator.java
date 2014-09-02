@@ -41,6 +41,7 @@ public class URIConfigurator {
 		urls.put(Membership.class, "memberships");
 		urls.put(IssuePriority.class, "enumerations/issue_priorities");
                 urls.put(WikiPage.class, "wiki/index");
+                urls.put(WikiPageDetail.class, "wiki");
         urls.put(TimeEntryActivity.class, "enumerations/time_entry_activities");
 		urls.put(Watcher.class, "watchers");
 	}
@@ -106,7 +107,12 @@ public class URIConfigurator {
 	}
 
 	public URI getChildIdURI(Class<?> parent, String parentId,
-                Class<?> child, int value) {
+                Class<?> child, int value) {            
+            return this.getChildIdURI(parent, parentId, child, String.valueOf(value));
+	}
+        
+        public URI getChildIdURI(Class<?> parent, String parentId,
+                Class<?> child, String value) {
             final String base = getConfig(parent);
             final String detal = getConfig(child);
             return createURI(base + "/" + parentId + "/" + detal +

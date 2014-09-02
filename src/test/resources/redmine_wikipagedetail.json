@@ -1,0 +1,17 @@
+{
+    "wiki_page": {
+        "title": "Specific",
+        "version": "2",
+        "parent": {
+          "title": "Wiki"  
+        },
+        "author": {
+            "id": "1",
+            "name": "John"
+        },
+        "text": "blablabla",
+        "created_on": "2008-03-09T12:08:08Z",
+        "updated_on": "2008-03-09T23:42:33+01:00"
+    }
+}
+

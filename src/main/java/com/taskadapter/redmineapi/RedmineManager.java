@@ -36,6 +36,7 @@ import com.taskadapter.redmineapi.bean.User;
 import com.taskadapter.redmineapi.bean.Version;
 import com.taskadapter.redmineapi.bean.Watcher;
 import com.taskadapter.redmineapi.bean.WikiPage;
+import com.taskadapter.redmineapi.bean.WikiPageDetail;
 import com.taskadapter.redmineapi.internal.CopyBytesHandler;
 import com.taskadapter.redmineapi.internal.Joiner;
 import com.taskadapter.redmineapi.internal.Transport;
@@ -980,72 +981,53 @@ public class RedmineManager {
         transport.deleteChildId(Issue.class, Integer.toString(issue.getId()), watcher, watcher.getId() );
     }
     
-    public List<WikiPage> getWikiPagesByProject(final Project project) {        
-        try {
-        
-            Comparator<WikiPage> byCreatedOnField = 
-                    new Comparator<WikiPage>() {
-                        @Override
-                        public int compare(WikiPage o1, WikiPage o2) {
-                            if (o1.getCreatedOn() != null && o2.getUpdatedOn() != null) {
-                                return o1.getCreatedOn().compareTo(o2.getCreatedOn());
-                            } else {
-                                return 0;
-                            }
+    /**
+     * 
+     * @param project the project we want the wiki pages from
+     * @return a list of all wiki pages sorted by creation date. The first
+     * one is the oldest one.
+     * @throws RedmineException
+     * @since Redmine 2.2
+     **/
+    public List<WikiPage> getWikiPagesByProject(final Project project) throws RedmineException {        
+        Comparator<WikiPage> byCreatedOnField = 
+                new Comparator<WikiPage>() {
+                    @Override
+                    public int compare(WikiPage o1, WikiPage o2) {
+                        if (o1.getCreatedOn() != null && o2.getUpdatedOn() != null) {
+                            return o1.getCreatedOn().compareTo(o2.getCreatedOn());
+                        } else {
+                            return 0;
                         }
-                    };
-            
-            List<WikiPage> resultList = 
-                    transport.getChildEntries(Project.class,
-                            project.getIdentifier(), WikiPage.class);
-        
-            // Usually the first page created is the 'Wiki' (home) page.
-            Collections.sort(resultList, byCreatedOnField);
-            
-            return resultList;
-            
-        } catch (RedmineException e) {
-            e.printStackTrace();
-            throw new RedmineInternalError(
-                "RedmineError while trying to get a list of wiki pages from project " +
-                project.getName() +
-                "[Reason:" + e.getMessage() + "]"
-            );
-        }
+                    }
+                };
+
+        List<WikiPage> resultList = 
+                transport.getChildEntries(Project.class,
+                        project.getIdentifier(), WikiPage.class);
+
+        // Usually the first page created is the 'Wiki' (home) page.
+        Collections.sort(resultList, byCreatedOnField);
+
+        return resultList;
+
     }
     
-    public WikiPage getWikiPageByTitle(String title, INCLUDE... include) throws RedmineException {
-        String value = Joiner.join(",", include);
-		return transport.getObject(WikiPage.class, title, new BasicNameValuePair("include", value));
-    }
-    
-    public static void main(String[] args) throws Exception {
-        RedmineManager redmineManager = new RedmineManager("http://redmine.local", "d0874f019e6291d6fb52c123e416e13509fa3bda");
-        
-        Project yump = redmineManager.getProjectByKey("yump");
-        List<WikiPage> wikiPages = redmineManager.getWikiPagesByProject(yump);
-    
-        for(WikiPage page: wikiPages) {
-            System.out.println("=============================");
-            if (page.getParent() != null)
-            System.out.println("parent: "+page.getParent().getTitle());
-            System.out.println("title:" + page.getTitle());
-            System.out.println("text:" + page.getText());
-            System.out.println("user:" + page.getUser());
-            System.out.println("version:" + page.getVersion());
-            System.out.println("createdOn:" + page.getCreatedOn());
-            System.out.println("updatedOn:" + page.getUpdatedOn());
-            System.out.println("=============================");
-        }
-        
-        System.out.println(
-            redmineManager
-                    .getWikiPageByTitle(
-                            wikiPages.get(0).getTitle(), 
-                            INCLUDE.attachments
-                    ).getText()
+    /**
+     * @param project the project this wiki page belongs
+     * @param title The name of the page
+     * @throws RedmineException
+     * @return the wiki page titled with the name passed as parameter
+     * @since Redmine 2.2
+     **/
+    public WikiPageDetail getWikiPageDetailByProjectAndTitle(Project project, String title) throws RedmineException {
+        return transport.getChildEntry(
+            Project.class, 
+            project.getIdentifier(),
+            WikiPageDetail.class,
+            title
         );
+
     }
-    
-    
+       
 }
