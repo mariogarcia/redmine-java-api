@@ -1,5 +1,6 @@
 package com.taskadapter.redmineapi;
 
+import com.taskadapter.redmineapi.bean.Attachment;
 import com.taskadapter.redmineapi.bean.Project;
 import com.taskadapter.redmineapi.bean.WikiPage;
 import com.taskadapter.redmineapi.bean.WikiPageDetail;
@@ -118,7 +119,17 @@ public class RedmineManagerUnitTest {
         assertEquals(Integer.valueOf(2),specificPage.getVersion());
         assertNotNull(specificPage.getCreatedOn());
         assertNotNull(specificPage.getUpdatedOn());
-        
+	assertNotNull(specificPage.getAttachments());
+	assertEquals(1, specificPage.getAttachments().size());
+	
+	Attachment attachment = specificPage.getAttachments().get(0);
+	
+	assertEquals("Calculations.groovy",attachment.getFileName());
+	assertEquals(Integer.valueOf(4858), attachment.getId());
+	assertEquals(171, attachment.getFileSize());
+	assertEquals("Stephen Hawking", attachment.getAuthor().getFullName());
+        assertEquals("http://redmine.local/attachments/download/4858/Calculations.groovy", attachment.getContentURL());
+	
         verify(client,times(1)).execute(any(HttpUriRequest.class));
         ArgumentCaptor<HttpUriRequest> argument = ArgumentCaptor.forClass(HttpUriRequest.class);
         verify(client).execute(argument.capture());

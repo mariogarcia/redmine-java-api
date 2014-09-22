@@ -11,7 +11,21 @@
         },
         "text": "blablabla",
         "created_on": "2008-03-09T12:08:08Z",
-        "updated_on": "2008-03-09T23:42:33+01:00"
+        "updated_on": "2008-03-09T23:42:33+01:00",
+	"attachments":[
+		{
+		"id":4858,
+		"filename":"Calculations.groovy",
+		"filesize":171,
+		"description":"",
+		"content_url":"http://redmine.local/attachments/download/4858/Calculations.groovy",
+		"author":{
+			"id":1,
+			"name":"Stephen Hawking"
+		},
+		"created_on":"2014-09-22T08:53:02Z"
+		}
+	]
     }
 }
 

@@ -747,7 +747,8 @@ public class RedmineJSONParser {
         wikiPage.setUser(JsonInput.getObjectOrNull(object, "author", USER_PARSER));
         wikiPage.setVersion(JsonInput.getIntOrNull(object, "version"));
         wikiPage.setCreatedOn(getDateOrNull(object, "created_on"));
-        wikiPage.setUpdatedOn(getDateOrNull(object, "updated_on"));        
+        wikiPage.setUpdatedOn(getDateOrNull(object, "updated_on"));
+	wikiPage.setAttachments(JsonInput.getListOrNull(object, "attachments", ATTACHMENT_PARSER));
 
         return wikiPage;
     }
