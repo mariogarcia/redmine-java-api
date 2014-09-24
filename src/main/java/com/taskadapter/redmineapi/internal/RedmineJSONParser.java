@@ -443,6 +443,9 @@ public class RedmineJSONParser {
 				CHANGESET_PARSER));
 		result.setWatchers(JsonInput.getListOrEmpty(content, "watchers",
 				WATCHER_PARSER));
+		
+		result.setStoryPoints(JsonInput.getFloatOrNull(content, "story_points"));
+		
 		return result;
 	}
 

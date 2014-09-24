@@ -28,6 +28,7 @@ public class Issue implements Identifiable {
     private Date updatedOn;
     private Integer statusId;
     private String statusName;
+    private Float storyPoints;
     private Version targetVersion;
     private IssueCategory category;
 
@@ -333,5 +334,13 @@ public class Issue implements Identifiable {
 
     public void setCategory(IssueCategory category) {
         this.category = category;
+    }
+
+    public Float getStoryPoints() {
+	    return storyPoints;
+    }
+
+    public void setStoryPoints(Float storyPoints) {
+	    this.storyPoints = storyPoints;
     }
 }

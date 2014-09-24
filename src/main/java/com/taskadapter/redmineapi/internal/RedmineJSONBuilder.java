@@ -334,6 +334,7 @@ public class RedmineJSONBuilder {
 					UPLOAD_WRITER);
 		}
 		
+		JsonOutput.addIfNotNull(writer, "story_points", issue.getStoryPoints());
 
 		/*
 		 * Journals and Relations cannot be set for an issue during creation or
