@@ -105,12 +105,12 @@ public class RedmineManagerUnitTest {
         when(client.execute(any(HttpUriRequest.class))).thenReturn(response);
         
         WikiPageDetail specificPage = 
-                manager.getWikiPageDetailByProjectAndTitle(project,"Specific");
+                manager.getWikiPageDetailByProjectAndTitle(project,"\"Specific");
         
         assertThat(
             "The startPage is the first one", 
             specificPage.getTitle(), 
-            is("Specific")
+            is("\"Specific")
         );
         
         assertEquals("blablabla",specificPage.getText());
@@ -137,7 +137,7 @@ public class RedmineManagerUnitTest {
         assertThat(
             "Checking requested URI", 
             argument.getValue().getURI().getPath(),
-            is("/projects/foo/wiki/Specific.json")
+            is("/projects/foo/wiki/\"Specific.json")
         );
     }
     
