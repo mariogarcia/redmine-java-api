@@ -50,6 +50,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -1020,12 +1022,19 @@ public class RedmineManager {
      * @return the wiki page titled with the name passed as parameter
      * @since Redmine 2.2
      **/
-    public WikiPageDetail getWikiPageDetailByProjectAndTitle(Project project, String title) throws RedmineException {
+    public WikiPageDetail getWikiPageDetailByProjectAndTitle(Project project, String title) throws RedmineException {	    
+	String parsedTitle = title;
+	try {
+		parsedTitle = URLEncoder.encode(title, "UTF-8");
+	} catch (UnsupportedEncodingException e){
+		throw new RedmineException(e);
+	}
+	
         return transport.getChildEntry(
             Project.class, 
             project.getIdentifier(),
             WikiPageDetail.class,
-            title
+            parsedTitle
         );
 
     }
