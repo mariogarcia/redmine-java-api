@@ -59,8 +59,8 @@ publishing {
 }
 
 bintray {
-    user = 'kaleidos'
-    key = '0c59192213d1b7c4fed93f7654aae5aacade0f5e'
+    user = ''
+    key = ''
     publish = true
     publications = ['mavenCustom']
     pkg {
