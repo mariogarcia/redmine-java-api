@@ -390,6 +390,92 @@ public final class Transport {
 		return getObjectsList(objectClass, Arrays.asList(params));
 	}
 
+    public static class Pagination<T>  {
+        List<T> list;
+        int offset;
+        int total;
+        int limit;
+    }
+
+    public static class ObjectsStream<T> implements java.util.Iterator<Pagination<T>> {
+
+        private Integer offset = 0;
+        private static final Integer limit = 50;
+        private final Class<T> objectClass;
+        private final URIConfigurator uriConfigurator;
+        private final SimpleCommunicator<String> communicator;
+        private final Collection<? extends NameValuePair> params;
+
+        public ObjectsStream(
+            Class<T> objectClass,
+            URIConfigurator uriConfigurator,
+            SimpleCommunicator<String> communicator,
+            Collection<? extends NameValuePair> params
+            ) {
+            this.objectClass = objectClass;
+            this.uriConfigurator = uriConfigurator;
+            this.communicator = communicator;
+            this.params = params;
+        }
+
+        public boolean hasNext() { return true; } // Beware of infinite upperbound
+
+        public void remove() { }
+
+        public Pagination<T> next() throws java.util.NoSuchElementException {
+            // TODO add extra params
+            List<NameValuePair> paramsList = new ArrayList<NameValuePair>(params);
+
+			paramsList.add(new BasicNameValuePair("offset", String.valueOf(offset)));
+			paramsList.add(new BasicNameValuePair("limit", String.valueOf(limit)));
+
+		    final EntityConfig<T> config = (EntityConfig<T>)Transport.OBJECT_CONFIGS.get(objectClass);
+			final URI uri = uriConfigurator.getObjectsURI(objectClass, paramsList);
+
+			final HttpGet http = new HttpGet(uri);
+
+			final List<T> foundItems;
+            final Integer totalObjectsFoundOnServer;
+
+			try {
+
+			    final String response = communicator.sendRequest(http);
+				final JSONObject responseObject = RedmineJSONParser.getResponse(response);
+
+				totalObjectsFoundOnServer = JsonInput.getInt(responseObject, KEY_TOTAL_COUNT);
+				foundItems = JsonInput.getListNotNull(responseObject, config.multiObjectName, config.parser);
+
+			} catch (JSONException e) {
+				throw new java.util.NoSuchElementException(e.getMessage());
+			} catch (RedmineException redmineException) {
+				throw new java.util.NoSuchElementException(redmineException.getMessage());
+            }
+
+            Pagination<T> pagination = new Pagination<T>();
+            pagination.offset = offset;
+            pagination.limit = limit;
+            pagination.list = foundItems;
+            pagination.total = totalObjectsFoundOnServer;
+
+			offset += limit;
+
+            return pagination;
+        }
+
+
+    }
+
+    public <T> java.util.Iterator<Pagination<T>> getObjectsIterator(
+            Class<T> objectClass,
+            Collection<? extends NameValuePair> params) throws RedmineException {
+        return new ObjectsStream<T>(
+            objectClass,
+            getURIConfigurator(),
+            getCommunicator(),
+            params
+        );
+    }
+
 	/**
 	 * Returns an object list.
 	 * 

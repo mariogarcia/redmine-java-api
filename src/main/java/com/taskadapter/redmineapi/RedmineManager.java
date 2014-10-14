@@ -265,6 +265,17 @@ public class RedmineManager {
 		return transport.getObjectsList(Issue.class, params);
     }
 
+    public java.util.Iterator<Transport.Pagination<Issue>> getIssueIterator(Map<String,String> pParameters) throws RedmineException {
+        Set<NameValuePair> params = new HashSet<NameValuePair>();
+
+        for (final Entry<String, String> param : pParameters.entrySet()) {
+            params.add(new BasicNameValuePair(param.getKey(), param.getValue()));
+        }
+
+		return transport.getObjectsIterator(Issue.class, params);
+
+    }
+
     /**
      * @param id      the Redmine issue ID
      * @param include list of "includes". e.g. "relations", "journals", ...
@@ -982,17 +993,17 @@ public class RedmineManager {
     public void deleteWatcherFromIssue(Watcher watcher, Issue issue) throws RedmineException {
         transport.deleteChildId(Issue.class, Integer.toString(issue.getId()), watcher, watcher.getId() );
     }
-    
+
     /**
-     * 
+     *
      * @param project the project we want the wiki pages from
      * @return a list of all wiki pages sorted by creation date. The first
      * one is the oldest one.
      * @throws RedmineException
      * @since Redmine 2.2
      **/
-    public List<WikiPage> getWikiPagesByProject(final Project project) throws RedmineException {        
-        Comparator<WikiPage> byCreatedOnField = 
+    public List<WikiPage> getWikiPagesByProject(final Project project) throws RedmineException {
+        Comparator<WikiPage> byCreatedOnField =
                 new Comparator<WikiPage>() {
                     @Override
                     public int compare(WikiPage o1, WikiPage o2) {
@@ -1014,7 +1025,7 @@ public class RedmineManager {
         return resultList;
 
     }
-    
+
     /**
      * @param project the project this wiki page belongs
      * @param title The name of the page
@@ -1022,21 +1033,21 @@ public class RedmineManager {
      * @return the wiki page titled with the name passed as parameter
      * @since Redmine 2.2
      **/
-    public WikiPageDetail getWikiPageDetailByProjectAndTitle(Project project, String title) throws RedmineException {	    
+    public WikiPageDetail getWikiPageDetailByProjectAndTitle(Project project, String title) throws RedmineException {
 	String parsedTitle = title;
 	try {
 		parsedTitle = URLEncoder.encode(title, "UTF-8");
 	} catch (UnsupportedEncodingException e){
 		throw new RedmineException(e);
 	}
-	
+
         return transport.getChildEntry(
-            Project.class, 
+            Project.class,
             project.getIdentifier(),
             WikiPageDetail.class,
             parsedTitle
         );
 
     }
-       
+
 }
