@@ -6,11 +6,13 @@ import org.apache.http.client.utils.URIUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
 import com.taskadapter.redmineapi.RedmineInternalError;
+import java.io.UnsupportedEncodingException;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -87,13 +89,18 @@ public class URIConfigurator {
 			URL url = baseURL;
 			String path = url.getPath();
 			if (!query.isEmpty()) {
-				path += "/" + query;
+				path += "/" + URLEncoder.encode(query,"UTF-8");
 			}
-			uri = URIUtils.createURI(url.getProtocol(), url.getHost(),
-					url.getPort(), path,
+			uri = URIUtils.createURI(
+					url.getProtocol(), 
+					url.getHost(),
+					url.getPort(), 
+					path,
 					URLEncodedUtils.format(params, "UTF-8"), null);
 		} catch (URISyntaxException e) {
 			throw new RedmineInternalError(e);
+		} catch (UnsupportedEncodingException ex) {
+			throw new RedmineInternalError(ex);
 		}
 		return uri;
 	}
