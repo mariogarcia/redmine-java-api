@@ -107,16 +107,23 @@ public class URIConfigurator {
 	}
 
 	public URI getChildIdURI(Class<?> parent, String parentId,
-                Class<?> child, int value) {            
-            return this.getChildIdURI(parent, parentId, child, String.valueOf(value));
+                Class<?> child, int value, NameValuePair... params) {
+            return this.getChildIdURI(
+                    parent,
+                    parentId,
+                    child,
+                    String.valueOf(value),
+                    params);
 	}
-        
+
         public URI getChildIdURI(Class<?> parent, String parentId,
-                Class<?> child, String value) {
+                Class<?> child, String value, NameValuePair... params) {
             final String base = getConfig(parent);
             final String detal = getConfig(child);
-            return createURI(base + "/" + parentId + "/" + detal +
-                    "/" + value + URL_POSTFIX );
+            return createURI(
+                base + "/" + parentId + "/" + detal + "/" + value + URL_POSTFIX,
+                params
+            );
 	}
 
 	public URI getObjectsURI(Class<?> child, NameValuePair... args) {

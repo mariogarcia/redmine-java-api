@@ -1045,7 +1045,8 @@ public class RedmineManager {
             Project.class,
             project.getIdentifier(),
             WikiPageDetail.class,
-            parsedTitle
+            parsedTitle,
+            new BasicNameValuePair("include", "attachments")
         );
 
     }

@@ -582,15 +582,16 @@ public final class Transport {
          * @throws com.taskadapter.redmineapi.RedmineException 
 	 */
 	public <T> T getChildEntry(Class<?> parentClass, String parentId,
-			Class<T> classs, String childId) throws RedmineException {
-		final EntityConfig<T> config = getConfig(classs);                
-                final URI uri = 
+			Class<T> classs, String childId, NameValuePair... params) throws RedmineException {
+		final EntityConfig<T> config = getConfig(classs);
+                final URI uri =
                         getURIConfigurator()
                             .getChildIdURI(
-                                    parentClass, 
-                                    parentId, 
-                                    classs, 
-                                    childId);  
+                                    parentClass,
+                                    parentId,
+                                    classs,
+                                    childId,
+                                    params);
 
 		HttpGet http = new HttpGet(uri);
 		String response = getCommunicator().sendRequest(http);
